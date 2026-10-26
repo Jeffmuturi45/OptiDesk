@@ -1,0 +1,235 @@
+{% extends "base.html" %}
+{% block title %}Reception Dashboard{% endblock %}
+{% block nav_dashboard %}active{% endblock %}
+
+{% block content %}
+<div class="od-page-header">
+  <div>
+    <h1 class="od-page-title">
+      <i class="bi bi-person-lines-fill me-2" style="color:var(--od-green-700)"></i>
+      Reception Dashboard
+    </h1>
+    <div class="text-muted small mt-1">
+      <i class="bi bi-person-badge me-1"></i>
+      {{ user.get_full_name }}
+      &nbsp;·&nbsp;
+      <i class="bi bi-calendar3 me-1"></i>{{ today|date:"l, d F Y" }}
+    </div>
+  </div>
+  <div class="d-flex gap-2 flex-wrap">
+    <a href="#" class="btn btn-od-primary btn-sm" title="Coming in Phase 3">
+      <i class="bi bi-person-plus me-1"></i> Register Patient
+    </a>
+    <a href="#" class="btn btn-od-outline btn-sm" title="Coming in Phase 4">
+      <i class="bi bi-calendar-plus me-1"></i> New Appointment
+    </a>
+  </div>
+</div>
+
+<!-- Stat row -->
+<div class="od-dash-grid mb-4">
+
+  <div class="od-stat">
+    <div class="od-stat-icon od-stat-icon-blue">
+      <i class="bi bi-calendar3"></i>
+    </div>
+    <div>
+      <div class="od-stat-value">{{ todays_appointments }}</div>
+      <div class="od-stat-label">Appointments Today</div>
+    </div>
+  </div>
+
+  <div class="od-stat">
+    <div class="od-stat-icon od-stat-icon-amber">
+      <i class="bi bi-hourglass-split"></i>
+    </div>
+    <div>
+      <div class="od-stat-value">{{ queue_waiting }}</div>
+      <div class="od-stat-label">Waiting</div>
+    </div>
+  </div>
+
+  <div class="od-stat">
+    <div class="od-stat-icon od-stat-icon-green">
+      <i class="bi bi-person-fill-check"></i>
+    </div>
+    <div>
+      <div class="od-stat-value">{{ queue_in_consultation }}</div>
+      <div class="od-stat-label">In Consultation</div>
+    </div>
+  </div>
+
+  <div class="od-stat">
+    <div class="od-stat-icon" style="background:var(--od-charcoal-200);color:var(--od-charcoal-600);">
+      <i class="bi bi-check2-all"></i>
+    </div>
+    <div>
+      <div class="od-stat-value">{{ queue_completed }}</div>
+      <div class="od-stat-label">Completed Today</div>
+    </div>
+  </div>
+
+</div>
+
+<div class="row g-3">
+
+  <!-- Left — queue and check-in -->
+  <div class="col-lg-8">
+
+    <!-- Quick check-in / search -->
+    <div class="od-card mb-3">
+      <div class="od-card-header">
+        <span><i class="bi bi-search me-2"></i>Patient Search &amp; Check-In</span>
+      </div>
+      <div class="od-card-body">
+        <div class="row g-2 align-items-center">
+          <div class="col">
+            <input type="text" class="form-control" placeholder="Search by name, patient number, or phone…" disabled
+                   title="Patient search will be available in Phase 3">
+          </div>
+          <div class="col-auto">
+            <button class="btn btn-od-primary" disabled title="Coming in Phase 3">
+              <i class="bi bi-search me-1"></i> Search
+            </button>
+          </div>
+          <div class="col-auto">
+            <a href="#" class="btn btn-od-outline" title="Coming in Phase 3">
+              <i class="bi bi-person-plus me-1"></i> Register New
+            </a>
+          </div>
+        </div>
+        <div class="text-muted small mt-2">
+          <i class="bi bi-info-circle me-1"></i>
+          Full patient search and check-in will be available in Phase 3.
+        </div>
+      </div>
+    </div>
+
+    <!-- Waiting queue -->
+    <div class="od-card mb-3">
+      <div class="od-card-header">
+        <span><i class="bi bi-list-ol me-2"></i>Waiting Queue</span>
+        <div class="d-flex align-items-center gap-2">
+          <span class="badge bg-secondary">{{ queue_waiting }} waiting</span>
+          <button class="btn btn-sm btn-od-outline" id="refreshQueueBtn" onclick="location.reload()" title="Refresh queue">
+            <i class="bi bi-arrow-clockwise"></i>
+          </button>
+        </div>
+      </div>
+      <div class="od-card-body p-0">
+        {% if waiting_patients %}
+          {% for patient in waiting_patients %}
+          <div class="od-queue-row">
+            <div class="od-queue-ticket">{{ patient.ticket }}</div>
+            <div class="flex-grow-1">
+              <div class="od-queue-name">{{ patient.name }}</div>
+              <div class="od-queue-meta">Arrived {{ patient.arrived_at }}</div>
+            </div>
+            <div>
+              <span class="od-pill od-pill-inqueue">Waiting</span>
+            </div>
+          </div>
+          {% endfor %}
+        {% else %}
+          <div class="od-empty">
+            <i class="bi bi-inbox" style="font-size:1.75rem;display:block;margin-bottom:.5rem;"></i>
+            No patients in the queue.
+            <div class="small mt-1">
+              Check in a patient to add them to the waiting queue.
+              Queue management will be available in Phase 5.
+            </div>
+          </div>
+        {% endif %}
+      </div>
+    </div>
+
+    <!-- Checked-in patients -->
+    <div class="od-card">
+      <div class="od-card-header">
+        <span><i class="bi bi-person-check me-2"></i>Checked-In Today</span>
+        <span class="badge bg-secondary">{{ checked_in_patients|length }}</span>
+      </div>
+      <div class="od-card-body p-0">
+        {% if checked_in_patients %}
+          {% for patient in checked_in_patients %}
+          <div class="od-queue-row">
+            <div class="od-queue-ticket">{{ patient.ticket }}</div>
+            <div class="flex-grow-1">
+              <div class="od-queue-name">{{ patient.name }}</div>
+              <div class="od-queue-meta">{{ patient.type }}</div>
+            </div>
+            <div>
+              <span class="od-pill {% if patient.status == 'completed' %}od-pill-completed{% elif patient.status == 'in_consultation' %}od-pill-consult{% else %}od-pill-inqueue{% endif %}">
+                {{ patient.status_display }}
+              </span>
+            </div>
+          </div>
+          {% endfor %}
+        {% else %}
+          <div class="od-empty">
+            <i class="bi bi-calendar-check" style="font-size:1.75rem;display:block;margin-bottom:.5rem;"></i>
+            No patients checked in yet today.
+          </div>
+        {% endif %}
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Right column -->
+  <div class="col-lg-4">
+
+    <!-- Today's appointments summary -->
+    <div class="od-card mb-3">
+      <div class="od-card-header">
+        <span><i class="bi bi-calendar3 me-2"></i>Today's Appointments</span>
+      </div>
+      <div class="od-card-body">
+        <div class="od-empty" style="padding:1.5rem 1rem;">
+          <i class="bi bi-calendar-event" style="font-size:1.75rem;display:block;margin-bottom:.5rem;"></i>
+          Appointment calendar coming in Phase 4.
+        </div>
+      </div>
+    </div>
+
+    <!-- Quick actions -->
+    <div class="od-card">
+      <div class="od-card-header">
+        <span><i class="bi bi-lightning-charge me-2"></i>Quick Actions</span>
+      </div>
+      <div class="od-card-body">
+        <div class="d-grid gap-2">
+          <a href="#" class="od-quick-action" title="Coming in Phase 3">
+            <div class="od-quick-action-icon od-stat-icon-green"><i class="bi bi-person-plus-fill"></i></div>
+            <span>Register Patient</span>
+          </a>
+          <a href="#" class="od-quick-action" title="Coming in Phase 4">
+            <div class="od-quick-action-icon od-stat-icon-blue"><i class="bi bi-calendar-plus"></i></div>
+            <span>New Appointment</span>
+          </a>
+          <a href="#" class="od-quick-action" title="Coming in Phase 5">
+            <div class="od-quick-action-icon od-stat-icon-amber"><i class="bi bi-box-arrow-in-right"></i></div>
+            <span>Walk-In Check-In</span>
+          </a>
+          <a href="{% url 'accounts:change_password' %}" class="od-quick-action">
+            <div class="od-quick-action-icon" style="background:var(--od-charcoal-200);color:var(--od-charcoal-600);">
+              <i class="bi bi-key"></i>
+            </div>
+            <span>Change Password</span>
+          </a>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+</div>
+
+<!-- Auto-refresh status indicator -->
+<div class="text-muted small text-end mt-3" id="lastRefresh">
+  <i class="bi bi-arrow-clockwise me-1"></i>
+  Page loaded at <span id="loadTime">{{ now|date:"H:i:s" }}</span>
+  &nbsp;·&nbsp;
+  <button class="btn btn-sm btn-link text-muted p-0" onclick="location.reload()">Refresh</button>
+</div>
+{% endblock %}

@@ -1,0 +1,132 @@
+{% extends "base.html" %}
+{% block title %}Sign In{% endblock %}
+
+{% block full_page %}
+<div class="od-login-page">
+
+  <!-- ── Left brand panel ───────────────────────────────── -->
+  <div class="od-login-brand" aria-hidden="true">
+    <div class="od-login-brand-inner">
+      <div class="od-login-brand-logo">
+        <i class="bi bi-eye"></i>
+      </div>
+      <h1 class="od-login-brand-name">OptiDesk</h1>
+      <p class="od-login-brand-tagline">{{ CLINIC_NAME }}</p>
+      <ul class="od-login-feature-list">
+        <li><i class="bi bi-check-circle-fill"></i> Patient records &amp; optical prescriptions</li>
+        <li><i class="bi bi-check-circle-fill"></i> Appointment &amp; queue management</li>
+        <li><i class="bi bi-check-circle-fill"></i> Clinical encounters &amp; history</li>
+        <li><i class="bi bi-check-circle-fill"></i> Secure, role-based access</li>
+      </ul>
+    </div>
+    <p class="od-login-brand-footer">Authorised staff only &nbsp;·&nbsp; Secure local network</p>
+  </div>
+
+  <!-- ── Right form panel ──────────────────────────────── -->
+  <div class="od-login-form-panel">
+    <div class="od-login-card">
+
+      <!-- Mobile logo (hidden on desktop where the left panel is visible) -->
+      <div class="od-login-mobile-logo d-lg-none">
+        <div class="od-login-brand-logo od-login-brand-logo-sm">
+          <i class="bi bi-eye"></i>
+        </div>
+        <div>
+          <div class="fw-bold" style="font-size:1.1rem;color:var(--od-green-700)">OptiDesk</div>
+          <div class="text-muted small">{{ CLINIC_NAME }}</div>
+        </div>
+      </div>
+
+      <h2 class="od-login-heading">Welcome back</h2>
+      <p class="od-login-subheading">Sign in to your OptiDesk account</p>
+
+      <!-- Django messages -->
+      {% for message in messages %}
+      <div class="od-login-alert od-login-alert-{{ message.tags }}">
+        {% if message.tags == 'success' %}<i class="bi bi-check-circle-fill"></i>
+        {% elif message.tags == 'danger' %}<i class="bi bi-exclamation-triangle-fill"></i>
+        {% elif message.tags == 'warning' %}<i class="bi bi-exclamation-circle-fill"></i>
+        {% else %}<i class="bi bi-info-circle-fill"></i>{% endif %}
+        {{ message }}
+      </div>
+      {% endfor %}
+
+      <form method="post" autocomplete="off" novalidate>
+        {% csrf_token %}
+
+        <!-- Username -->
+        <div class="od-field-group">
+          <label class="od-field-label" for="id_username">
+            <i class="bi bi-person"></i> Username
+          </label>
+          {{ form.username }}
+          {% if form.username.errors %}
+            <div class="od-field-error">
+              <i class="bi bi-exclamation-circle"></i> {{ form.username.errors.0 }}
+            </div>
+          {% endif %}
+        </div>
+
+        <!-- Password -->
+        <div class="od-field-group">
+          <div class="od-field-label-row">
+            <label class="od-field-label" for="id_password">
+              <i class="bi bi-lock"></i> Password
+            </label>
+            <a href="{% url 'accounts:forgot_password' %}" class="od-forgot-link">
+              Forgot password?
+            </a>
+          </div>
+          <div class="od-password-input-wrap">
+            {{ form.password }}
+            <button type="button" class="od-pw-toggle" id="togglePw" aria-label="Toggle password visibility" tabindex="-1">
+              <i class="bi bi-eye-slash" id="togglePwIcon"></i>
+            </button>
+          </div>
+          {% if form.password.errors %}
+            <div class="od-field-error">
+              <i class="bi bi-exclamation-circle"></i> {{ form.password.errors.0 }}
+            </div>
+          {% endif %}
+        </div>
+
+        <button type="submit" class="od-login-btn" id="loginBtn">
+          <i class="bi bi-box-arrow-in-right"></i>
+          Sign In
+        </button>
+      </form>
+
+      <p class="od-login-security-note">
+        <i class="bi bi-shield-lock"></i>
+        Protected by secure session management &amp; CSRF protection
+      </p>
+    </div>
+  </div>
+
+</div>
+
+<script>
+// Password toggle
+document.getElementById('togglePw')?.addEventListener('click', function() {
+  const pw = document.getElementById('id_password');
+  const icon = document.getElementById('togglePwIcon');
+  if (!pw) return;
+  if (pw.type === 'password') {
+    pw.type = 'text';
+    icon.className = 'bi bi-eye';
+  } else {
+    pw.type = 'password';
+    icon.className = 'bi bi-eye-slash';
+  }
+});
+
+// Prevent double-submit
+document.querySelector('form')?.addEventListener('submit', function() {
+  const btn = document.getElementById('loginBtn');
+  if (btn) {
+    btn.disabled = true;
+    btn.innerHTML = '<span class="spinner-border spinner-border-sm me-2" role="status"></span>Signing in…';
+  }
+});
+</script>
+{% endblock full_page %}

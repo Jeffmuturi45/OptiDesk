@@ -1,0 +1,19 @@
+{
+  "name": "OptiDesk",
+  "short_name": "OptiDesk",
+  "description": "Optical Clinic Management System",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#1a6b3a",
+  "theme_color": "#1a6b3a",
+  "display_override": [
+    "window-controls-overlay"
+  ],
+  "icons": [
+    {
+      "src": "/static/icons/icon-192.png",
+      "sizes": "1254x1254",
+      "type": "image/png"
+    }
+  ]
+}

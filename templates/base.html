@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="en" data-bs-theme="light">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="OptiDesk — Optical Clinic Management">
+  <title>{% block title %}OptiDesk{% endblock %} — {{ CLINIC_NAME }}</title>
+
+  <!-- PWA & Favicon -->
+  <link rel="manifest" href="/static/manifest.json">
+  <link rel="icon" type="image/x-icon" href="/static/icons/favicon.ico">
+  <link rel="apple-touch-icon" href="/static/icons/icon-192.png">
+  <meta name="theme-color" content="#1a6b3a">
+
+  <!-- Bootstrap 5 (local) -->
+  <link rel="stylesheet" href="/static/vendor/bootstrap.min.css">
+  <!-- Bootstrap Icons (local) -->
+  <link rel="stylesheet" href="/static/vendor/bootstrap-icons.min.css">
+  <!-- OptiDesk styles -->
+  <link rel="stylesheet" href="/static/css/optidesksv.css">
+
+  {% block extra_css %}{% endblock %}
+</head>
+
+<body class="od-body">
+
+  {% if user.is_authenticated %}
+  <!-- ═══ TOP NAVIGATION ════════════════════════════════════════════════════════ -->
+  <nav class="navbar navbar-expand-lg od-navbar" id="mainNav">
+    <div class="container-fluid px-3">
+
+      <!-- Brand -->
+      <a class="navbar-brand od-brand d-flex align-items-center gap-2" href="{% url 'dashboard:home' %}">
+        <span class="od-brand-icon"><i class="bi bi-eye"></i></span>
+        <span class="od-brand-text">OptiDesk</span>
+      </a>
+
+      <!-- Toggler -->
+      <button class="navbar-toggler border-0" type="button" data-bs-toggle="collapse" data-bs-target="#navbarMain">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+
+      <div class="collapse navbar-collapse" id="navbarMain">
+        <!-- Main nav -->
+        <ul class="navbar-nav me-auto gap-1">
+          <li class="nav-item">
+            <a class="nav-link {% block nav_dashboard %}{% endblock %}" href="{% url 'dashboard:home' %}">
+              <i class="bi bi-speedometer2"></i> Dashboard
+            </a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link {% block nav_patients %}{% endblock %}" href="#">
+              <i class="bi bi-people"></i> Patients
+            </a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link {% block nav_appointments %}{% endblock %}" href="#">
+              <i class="bi bi-calendar3"></i> Appointments
+            </a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link {% block nav_queue %}{% endblock %}" href="#">
+              <i class="bi bi-list-ol"></i> Queue
+            </a>
+          </li>
+          {% if user.is_doctor or user.is_superadmin %}
+          <li class="nav-item">
+            <a class="nav-link {% block nav_clinical %}{% endblock %}" href="#">
+              <i class="bi bi-journal-medical"></i> Clinical
+            </a>
+          </li>
+          {% endif %}
+          {% if user.is_superadmin %}
+          <li class="nav-item dropdown">
+            <a class="nav-link dropdown-toggle {% block nav_admin %}{% endblock %}" href="#" data-bs-toggle="dropdown">
+              <i class="bi bi-gear"></i> Admin
+            </a>
+            <ul class="dropdown-menu">
+              <li><a class="dropdown-item" href="{% url 'accounts:user_list' %}"><i
+                    class="bi bi-people-fill me-2"></i>Users</a></li>
+              <li><a class="dropdown-item" href="{% url 'audit:event_list' %}"><i
+                    class="bi bi-shield-check me-2"></i>Audit Log</a></li>
+              <li>
+                <hr class="dropdown-divider">
+              </li>
+              <li><a class="dropdown-item" href="/admin/"><i class="bi bi-tools me-2"></i>Django Admin</a></li>
+            </ul>
+          </li>
+          {% endif %}
+        </ul>
+
+        <!-- Right side -->
+        <ul class="navbar-nav align-items-center gap-2">
+          <!-- Connectivity indicator -->
+          <li class="nav-item" id="connectivityIndicator" title="Server connection">
+            <span class="badge od-badge-online" id="connBadge">
+              <i class="bi bi-wifi" id="connIcon"></i> <span id="connText">Online</span>
+            </span>
+          </li>
+
+          <!-- Clock -->
+          <li class="nav-item d-none d-md-flex align-items-center">
+            <span class="od-clock" id="liveClock">
+              <i class="bi bi-clock"></i> <span id="clockDisplay">--:--:--</span>
+            </span>
+          </li>
+
+          <!-- User menu -->
+          <li class="nav-item dropdown">
+            <a class="nav-link dropdown-toggle d-flex align-items-center gap-2" href="#" data-bs-toggle="dropdown">
+              <span class="od-avatar">{{ user.first_name|first|upper }}{{ user.last_name|first|upper }}</span>
+              <span class="d-none d-lg-inline">{{ user.get_full_name }}</span>
+            </a>
+            <ul class="dropdown-menu dropdown-menu-end">
+              <li class="dropdown-item-text text-muted small px-3 py-1">
+                {{ user.get_role_display }}
+              </li>
+              <li>
+                <hr class="dropdown-divider my-1">
+              </li>
+              <li><a class="dropdown-item" href="{% url 'accounts:profile' %}"><i
+                    class="bi bi-person me-2"></i>Profile</a></li>
+              <li><a class="dropdown-item" href="{% url 'accounts:change_password' %}"><i
+                    class="bi bi-key me-2"></i>Change Password</a></li>
+              <li>
+                <hr class="dropdown-divider my-1">
+              </li>
+              <li>
+                <form method="post" action="{% url 'accounts:logout' %}">
+                  {% csrf_token %}
+                  <button type="submit" class="dropdown-item text-danger">
+                    <i class="bi bi-box-arrow-right me-2"></i>Logout
+                  </button>
+                </form>
+              </li>
+            </ul>
+          </li>
+        </ul>
+      </div>
+    </div>
+  </nav>
+  {% endif %}
+
+  <!-- ═══ TOAST CONTAINER ════════════════════════════════════════════════════════ -->
+  <div class="toast-container position-fixed top-0 end-0 p-3" style="z-index: 1090;" id="toastContainer">
+    {% for message in messages %}
+    <div class="toast od-toast od-toast-{{ message.tags }} show" role="alert" aria-live="assertive" aria-atomic="true"
+      data-bs-autohide="true" data-bs-delay="5000">
+      <div class="toast-header">
+        <span class="od-toast-icon me-2">
+          {% if message.tags == 'success' %}<i class="bi bi-check-circle-fill text-success"></i>
+          {% elif message.tags == 'danger' %}<i class="bi bi-exclamation-triangle-fill text-danger"></i>
+          {% elif message.tags == 'warning' %}<i class="bi bi-exclamation-circle-fill text-warning"></i>
+          {% else %}<i class="bi bi-info-circle-fill text-info"></i>{% endif %}
+        </span>
+        <strong class="me-auto">
+          {% if message.tags == 'success' %}Success
+          {% elif message.tags == 'danger' %}Error
+          {% elif message.tags == 'warning' %}Warning
+          {% else %}Notice{% endif %}
+        </strong>
+        <button type="button" class="btn-close btn-close-sm" data-bs-dismiss="toast"></button>
+      </div>
+      <div class="toast-body">{{ message }}</div>
+      <div class="od-toast-progress"></div>
+    </div>
+    {% endfor %}
+  </div>
+
+  <!-- ═══ MAIN CONTENT ══════════════════════════════════════════════════════════ -->
+  {% block full_page %}
+  <main class="od-main {% if user.is_authenticated %}od-main-authenticated{% endif %}">
+    {% block breadcrumb %}{% endblock %}
+    <div class="od-content">
+      {% block content %}{% endblock %}
+    </div>
+  </main>
+  {% endblock full_page %}
+
+  <!-- ═══ FOOTER ════════════════════════════════════════════════════════════════ -->
+  {% if user.is_authenticated %}
+  <footer class="od-footer">
+    <div class="container-fluid px-3 d-flex justify-content-between align-items-center">
+      <span class="text-muted small">{{ CLINIC_NAME }}</span>
+      <span class="text-muted small">OptiDesk &copy; {% now "Y" %}</span>
+    </div>
+  </footer>
+  {% endif %}
+
+  <!-- ═══ SCRIPTS ═══════════════════════════════════════════════════════════════ -->
+  <!-- Bootstrap JS (local) -->
+  <script src="/static/vendor/bootstrap.bundle.min.js"></script>
+  <!-- Alpine.js (local) -->
+  <script src="/static/vendor/alpine.min.js" defer></script>
+  <!-- OptiDesk core JS -->
+  <script src="/static/js/optidesksv.js"></script>
+
+  {% block extra_js %}{% endblock %}
+</body>
+
+</html>

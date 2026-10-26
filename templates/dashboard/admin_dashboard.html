@@ -1,0 +1,270 @@
+{% extends "base.html" %}
+{% block title %}Admin Dashboard{% endblock %}
+{% block nav_dashboard %}active{% endblock %}
+
+{% block content %}
+<!-- Page header -->
+<div class="od-page-header">
+  <div>
+    <h1 class="od-page-title">
+      <i class="bi bi-speedometer2 me-2" style="color:var(--od-green-700)"></i>
+      System Dashboard
+    </h1>
+    <div class="text-muted small mt-1">
+      <i class="bi bi-person-badge me-1"></i>
+      {{ user.get_full_name }} &nbsp;·&nbsp; Super Administrator
+      &nbsp;·&nbsp;
+      <i class="bi bi-calendar3 me-1"></i>{{ today|date:"l, d F Y" }}
+    </div>
+  </div>
+  <div class="d-flex gap-2 flex-wrap">
+    <a href="{% url 'accounts:user_create' %}" class="btn btn-od-primary btn-sm">
+      <i class="bi bi-person-plus me-1"></i> New Staff Account
+    </a>
+    <a href="{% url 'audit:event_list' %}" class="btn btn-od-outline btn-sm">
+      <i class="bi bi-shield-check me-1"></i> Audit Log
+    </a>
+  </div>
+</div>
+
+<!-- Stat row -->
+<div class="od-dash-grid mb-4">
+
+  <div class="od-stat">
+    <div class="od-stat-icon od-stat-icon-green">
+      <i class="bi bi-people-fill"></i>
+    </div>
+    <div>
+      <div class="od-stat-value">{{ total_users }}</div>
+      <div class="od-stat-label">Total Staff Accounts</div>
+    </div>
+  </div>
+
+  <div class="od-stat">
+    <div class="od-stat-icon od-stat-icon-blue">
+      <i class="bi bi-person-check-fill"></i>
+    </div>
+    <div>
+      <div class="od-stat-value">{{ active_users }}</div>
+      <div class="od-stat-label">Active Accounts</div>
+    </div>
+  </div>
+
+  <div class="od-stat">
+    <div class="od-stat-icon od-stat-icon-purple">
+      <i class="bi bi-journal-medical"></i>
+    </div>
+    <div>
+      <div class="od-stat-value">{{ doctors }}</div>
+      <div class="od-stat-label">Doctors</div>
+    </div>
+  </div>
+
+  <div class="od-stat">
+    <div class="od-stat-icon od-stat-icon-amber">
+      <i class="bi bi-person-workspace"></i>
+    </div>
+    <div>
+      <div class="od-stat-value">{{ receptionists }}</div>
+      <div class="od-stat-label">Receptionists</div>
+    </div>
+  </div>
+
+</div>
+
+<div class="row g-3">
+
+  <!-- Left column -->
+  <div class="col-lg-8">
+
+    <!-- Quick actions -->
+    <div class="od-card mb-3">
+      <div class="od-card-header">
+        <span><i class="bi bi-lightning-charge me-2"></i>Quick Actions</span>
+      </div>
+      <div class="od-card-body">
+        <div class="row g-2">
+          <div class="col-sm-6 col-md-4">
+            <a href="{% url 'accounts:user_list' %}" class="od-quick-action">
+              <div class="od-quick-action-icon od-stat-icon-green"><i class="bi bi-people-fill"></i></div>
+              <div>
+                <div class="fw-600">Manage Staff</div>
+                <div class="text-muted" style="font-size:.75rem;">Users &amp; roles</div>
+              </div>
+            </a>
+          </div>
+          <div class="col-sm-6 col-md-4">
+            <a href="{% url 'accounts:user_create' %}" class="od-quick-action">
+              <div class="od-quick-action-icon od-stat-icon-blue"><i class="bi bi-person-plus-fill"></i></div>
+              <div>
+                <div class="fw-600">Add Staff</div>
+                <div class="text-muted" style="font-size:.75rem;">Create account</div>
+              </div>
+            </a>
+          </div>
+          <div class="col-sm-6 col-md-4">
+            <a href="{% url 'audit:event_list' %}" class="od-quick-action">
+              <div class="od-quick-action-icon od-stat-icon-amber"><i class="bi bi-shield-check"></i></div>
+              <div>
+                <div class="fw-600">Audit Log</div>
+                <div class="text-muted" style="font-size:.75rem;">Security events</div>
+              </div>
+            </a>
+          </div>
+          <div class="col-sm-6 col-md-4">
+            <a href="/admin/" class="od-quick-action">
+              <div class="od-quick-action-icon od-stat-icon-red"><i class="bi bi-tools"></i></div>
+              <div>
+                <div class="fw-600">Django Admin</div>
+                <div class="text-muted" style="font-size:.75rem;">System settings</div>
+              </div>
+            </a>
+          </div>
+          <div class="col-sm-6 col-md-4">
+            <a href="#" class="od-quick-action" title="Coming in Phase 3">
+              <div class="od-quick-action-icon od-stat-icon-green"><i class="bi bi-people"></i></div>
+              <div>
+                <div class="fw-600">Patients</div>
+                <div class="text-muted" style="font-size:.75rem;">Coming soon</div>
+              </div>
+            </a>
+          </div>
+          <div class="col-sm-6 col-md-4">
+            <a href="#" class="od-quick-action" title="Coming in Phase 4">
+              <div class="od-quick-action-icon od-stat-icon-purple"><i class="bi bi-calendar3"></i></div>
+              <div>
+                <div class="fw-600">Appointments</div>
+                <div class="text-muted" style="font-size:.75rem;">Coming soon</div>
+              </div>
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Recent staff accounts -->
+    <div class="od-card">
+      <div class="od-card-header">
+        <span><i class="bi bi-people me-2"></i>Recent Staff Accounts</span>
+        <a href="{% url 'accounts:user_list' %}" class="btn btn-od-outline btn-sm">View All</a>
+      </div>
+      <div class="od-card-body p-0">
+        {% if recent_users %}
+        <table class="od-table">
+          <thead>
+            <tr>
+              <th>Name</th>
+              <th>Username</th>
+              <th>Role</th>
+              <th>Status</th>
+              <th>Joined</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for u in recent_users %}
+            <tr>
+              <td>
+                <div class="d-flex align-items-center gap-2">
+                  <div class="od-avatar" style="background:var(--od-green-700);width:28px;height:28px;font-size:.68rem;">
+                    {{ u.first_name|first|upper }}{{ u.last_name|first|upper }}
+                  </div>
+                  <a href="{% url 'accounts:user_detail' u.pk %}" class="text-decoration-none fw-500" style="color:var(--od-charcoal-900)">
+                    {{ u.get_full_name }}
+                  </a>
+                </div>
+              </td>
+              <td class="text-muted">{{ u.username }}</td>
+              <td>
+                <span class="od-pill {% if u.is_superadmin %}od-pill-consult{% elif u.is_doctor %}od-pill-inqueue{% else %}od-pill-waiting{% endif %}">
+                  {{ u.get_role_display }}
+                </span>
+              </td>
+              <td>
+                {% if u.is_active %}
+                  <span class="od-pill od-pill-active"><i class="bi bi-circle-fill" style="font-size:.5rem"></i> Active</span>
+                {% else %}
+                  <span class="od-pill od-pill-inactive"><i class="bi bi-circle-fill" style="font-size:.5rem"></i> Inactive</span>
+                {% endif %}
+              </td>
+              <td class="text-muted">{{ u.date_joined|date:"d M Y" }}</td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+        {% else %}
+        <div class="od-empty">
+          <i class="bi bi-people" style="font-size:2rem;display:block;margin-bottom:.5rem;"></i>
+          No staff accounts yet.
+          <a href="{% url 'accounts:user_create' %}" class="d-block mt-2 text-decoration-none" style="color:var(--od-green-700)">Create the first account</a>
+        </div>
+        {% endif %}
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Right column -->
+  <div class="col-lg-4">
+
+    <!-- Clinic status -->
+    <div class="od-card mb-3">
+      <div class="od-card-header">
+        <span><i class="bi bi-activity me-2"></i>Clinic Status</span>
+      </div>
+      <div class="od-card-body">
+
+        <div class="d-flex justify-content-between align-items-center mb-2" style="font-size:.875rem;">
+          <span class="text-muted">Patients waiting</span>
+          <strong>{{ queue_waiting }}</strong>
+        </div>
+        <div class="d-flex justify-content-between align-items-center mb-2" style="font-size:.875rem;">
+          <span class="text-muted">In consultation</span>
+          <strong>{{ queue_in_consultation }}</strong>
+        </div>
+        <div class="d-flex justify-content-between align-items-center mb-2" style="font-size:.875rem;">
+          <span class="text-muted">Completed today</span>
+          <strong>{{ queue_completed }}</strong>
+        </div>
+        <div class="d-flex justify-content-between align-items-center" style="font-size:.875rem;">
+          <span class="text-muted">Today's appointments</span>
+          <strong>{{ todays_appointments }}</strong>
+        </div>
+
+        <div class="od-divider"></div>
+        <div class="text-muted small">
+          <i class="bi bi-info-circle me-1"></i>
+          Queue &amp; appointment data will populate in Phase 5.
+        </div>
+      </div>
+    </div>
+
+    <!-- System info -->
+    <div class="od-card">
+      <div class="od-card-header">
+        <span><i class="bi bi-server me-2"></i>System</span>
+      </div>
+      <div class="od-card-body">
+        <div class="d-flex justify-content-between align-items-center mb-2" style="font-size:.875rem;">
+          <span class="text-muted">Server time</span>
+          <strong>{{ now|date:"H:i" }}</strong>
+        </div>
+        <div class="d-flex justify-content-between align-items-center mb-2" style="font-size:.875rem;">
+          <span class="text-muted">Timezone</span>
+          <strong>{{ TIME_ZONE }}</strong>
+        </div>
+        <div class="d-flex justify-content-between align-items-center mb-2" style="font-size:.875rem;">
+          <span class="text-muted">Debug mode</span>
+          <strong>{% if DEBUG %}<span class="text-warning">ON</span>{% else %}<span class="text-success">OFF</span>{% endif %}</strong>
+        </div>
+        <div class="od-divider"></div>
+        <div class="d-flex justify-content-between align-items-center" style="font-size:.875rem;">
+          <span class="text-muted">Your last login IP</span>
+          <strong>{{ user.last_login_ip|default:"—" }}</strong>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+</div>
+{% endblock %}

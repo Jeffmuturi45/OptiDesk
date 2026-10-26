@@ -1,0 +1,191 @@
+{% extends "base.html" %}
+{% block title %}Doctor Dashboard{% endblock %}
+{% block nav_dashboard %}active{% endblock %}
+
+{% block content %}
+<div class="od-page-header">
+  <div>
+    <h1 class="od-page-title">
+      <i class="bi bi-clipboard2-pulse me-2" style="color:var(--od-green-700)"></i>
+      Doctor Dashboard
+    </h1>
+    <div class="text-muted small mt-1">
+      <i class="bi bi-person-badge me-1"></i>
+      Dr. {{ user.get_full_name }}
+      &nbsp;·&nbsp;
+      <i class="bi bi-calendar3 me-1"></i>{{ today|date:"l, d F Y" }}
+    </div>
+  </div>
+  <div class="d-flex gap-2 flex-wrap">
+    <button class="btn btn-od-primary btn-sm" disabled title="Coming in Phase 5">
+      <i class="bi bi-arrow-right-circle me-1"></i> Call Next Patient
+    </button>
+  </div>
+</div>
+
+<!-- Stat row -->
+<div class="od-dash-grid mb-4">
+
+  <div class="od-stat">
+    <div class="od-stat-icon od-stat-icon-amber">
+      <i class="bi bi-hourglass-split"></i>
+    </div>
+    <div>
+      <div class="od-stat-value">{{ queue_waiting }}</div>
+      <div class="od-stat-label">Waiting</div>
+    </div>
+  </div>
+
+  <div class="od-stat">
+    <div class="od-stat-icon od-stat-icon-green">
+      <i class="bi bi-person-lines-fill"></i>
+    </div>
+    <div>
+      <div class="od-stat-value">{{ queue_in_consultation }}</div>
+      <div class="od-stat-label">In Consultation</div>
+    </div>
+  </div>
+
+  <div class="od-stat">
+    <div class="od-stat-icon od-stat-icon-blue">
+      <i class="bi bi-check-circle"></i>
+    </div>
+    <div>
+      <div class="od-stat-value">{{ todays_encounters }}</div>
+      <div class="od-stat-label">Seen Today</div>
+    </div>
+  </div>
+
+  <div class="od-stat">
+    <div class="od-stat-icon od-stat-icon-purple">
+      <i class="bi bi-pencil-square"></i>
+    </div>
+    <div>
+      <div class="od-stat-value">{{ pending_notes }}</div>
+      <div class="od-stat-label">Pending Notes</div>
+    </div>
+  </div>
+
+</div>
+
+<div class="row g-3">
+
+  <!-- Waiting queue -->
+  <div class="col-lg-7">
+
+    <!-- Current patient -->
+    <div class="od-card mb-3">
+      <div class="od-card-header">
+        <span><i class="bi bi-person-fill me-2" style="color:var(--od-green-700)"></i>Current Consultation</span>
+        {% if current_patient %}
+        <span class="od-pill od-pill-consult"><i class="bi bi-circle-fill" style="font-size:.5rem"></i> Active</span>
+        {% endif %}
+      </div>
+      <div class="od-card-body">
+        {% if current_patient %}
+          <div class="d-flex align-items-center gap-3">
+            <div class="od-queue-ticket" style="width:48px;height:48px;font-size:.9rem;">
+              {{ current_patient.ticket }}
+            </div>
+            <div>
+              <div class="fw-bold">{{ current_patient.name }}</div>
+              <div class="text-muted small">Since {{ current_patient.started_at }}</div>
+            </div>
+            <div class="ms-auto">
+              <a href="#" class="btn btn-od-primary btn-sm">
+                <i class="bi bi-journal-medical me-1"></i> Open Record
+              </a>
+            </div>
+          </div>
+        {% else %}
+          <div class="od-empty" style="padding:1.5rem 1rem;">
+            <i class="bi bi-person-dash" style="font-size:1.75rem;display:block;margin-bottom:.5rem;"></i>
+            No patient in consultation.
+            <div class="small mt-1">Queue management will be available in Phase 5.</div>
+          </div>
+        {% endif %}
+      </div>
+    </div>
+
+    <!-- Waiting list -->
+    <div class="od-card">
+      <div class="od-card-header">
+        <span><i class="bi bi-list-ol me-2"></i>Waiting Queue</span>
+        <span class="badge bg-secondary">{{ queue_waiting }} waiting</span>
+      </div>
+      <div class="od-card-body p-0">
+        {% if waiting_patients %}
+          {% for patient in waiting_patients %}
+          <div class="od-queue-row">
+            <div class="od-queue-ticket">{{ patient.ticket }}</div>
+            <div>
+              <div class="od-queue-name">{{ patient.name }}</div>
+              <div class="od-queue-meta">Arrived {{ patient.arrived_at }}</div>
+            </div>
+            <div class="ms-auto">
+              <button class="btn btn-od-outline btn-sm">
+                <i class="bi bi-arrow-right"></i> Call
+              </button>
+            </div>
+          </div>
+          {% endfor %}
+        {% else %}
+          <div class="od-empty">
+            <i class="bi bi-inbox" style="font-size:1.75rem;display:block;margin-bottom:.5rem;"></i>
+            No patients waiting.
+            <div class="small mt-1">The waiting queue is empty right now.</div>
+          </div>
+        {% endif %}
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Right column -->
+  <div class="col-lg-5">
+
+    <!-- Today's appointments -->
+    <div class="od-card mb-3">
+      <div class="od-card-header">
+        <span><i class="bi bi-calendar3 me-2"></i>Today's Appointments</span>
+        <span class="badge bg-secondary">{{ todays_appointments }}</span>
+      </div>
+      <div class="od-card-body">
+        <div class="od-empty" style="padding:1.5rem 1rem;">
+          <i class="bi bi-calendar-x" style="font-size:1.75rem;display:block;margin-bottom:.5rem;"></i>
+          Appointment data coming in Phase 4.
+        </div>
+      </div>
+    </div>
+
+    <!-- Quick actions -->
+    <div class="od-card">
+      <div class="od-card-header">
+        <span><i class="bi bi-lightning-charge me-2"></i>Quick Access</span>
+      </div>
+      <div class="od-card-body">
+        <div class="d-grid gap-2">
+          <a href="#" class="od-quick-action" title="Coming in Phase 3">
+            <div class="od-quick-action-icon od-stat-icon-green"><i class="bi bi-people"></i></div>
+            <span>Search Patients</span>
+          </a>
+          <a href="#" class="od-quick-action" title="Coming in Phase 6">
+            <div class="od-quick-action-icon od-stat-icon-blue"><i class="bi bi-journal-medical"></i></div>
+            <span>New Clinical Note</span>
+          </a>
+          <a href="#" class="od-quick-action" title="Coming in Phase 6">
+            <div class="od-quick-action-icon od-stat-icon-purple"><i class="bi bi-eyeglasses"></i></div>
+            <span>Write Prescription</span>
+          </a>
+          <a href="{% url 'accounts:change_password' %}" class="od-quick-action">
+            <div class="od-quick-action-icon od-stat-icon-amber"><i class="bi bi-key"></i></div>
+            <span>Change Password</span>
+          </a>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+</div>
+{% endblock %}

@@ -1,0 +1,12 @@
+{# This template is not used — the dashboard view routes directly to role-specific templates. #}
+{# Kept as a fallback; should not be rendered under normal operation. #}
+{% extends "base.html" %}
+{% block title %}Dashboard{% endblock %}
+{% block content %}
+<div class="od-page-header">
+  <h1 class="od-page-title">Dashboard</h1>
+</div>
+<div class="alert alert-warning">
+  Unexpected routing — please contact your administrator.
+</div>
+{% endblock %}
